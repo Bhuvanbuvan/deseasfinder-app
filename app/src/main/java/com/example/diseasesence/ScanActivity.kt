@@ -9,12 +9,12 @@ import android.media.ThumbnailUtils
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.example.diseasesence.databinding.ActivityScanBinding
 import com.example.diseasesence.ml.ModelUnquant
-import com.example.diseasesence.ml.ModelUnquantt
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -22,6 +22,7 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
 import org.tensorflow.lite.DataType
+import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.model.Model
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.io.ByteArrayOutputStream
@@ -36,8 +37,7 @@ class ScanActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     var TAG = "TAGY"
     var imageuri:Uri?= null
-
-
+    var imageSize=224
     override fun onCreate(savedInstanceState: Bundle?){
     super.onCreate(savedInstanceState)
 
@@ -75,20 +75,24 @@ class ScanActivity : AppCompatActivity() {
 
     private fun classifyImage(image: Bitmap) {
         try {
+// Load your TensorFlow Lite model
+            val model = ModelUnquant.newInstance(applicationContext)
 
-            //val model =ModelUnquantt.newInstance(applicationContext)
-            val model = com.example.diseasesence.ml.Model.newInstance(applicationContext)
+// Prepare input image
+            /*val inputFeature0 = TensorImage(DataType.FLOAT32)
+            val bitmap = Bitmap.createScaledBitmap(image, 224, 224, true)
+            inputFeature0.load(bitmap)*/
 
-            // Creates inputs for reference.
-            val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 32, 3), DataType.FLOAT32)
-            val byteBuffer = ByteBuffer.allocateDirect(4 * 32 * 32 * 3)
+
+            val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.FLOAT32)
+            val byteBuffer = ByteBuffer.allocateDirect(4 * imageSize * imageSize * 3)
             byteBuffer.order(ByteOrder.nativeOrder())
 
-            val intValues = IntArray(32 * 32)
+            val intValues = IntArray(imageSize * imageSize)
             image.getPixels(intValues, 0, image.width, 0, 0, image.width, image.height)
             var pixel = 0
-            for (i in 0 until 32) {
-                for (j in 0 until 32) {
+            for (i in 0 until imageSize) {
+                for (j in 0 until imageSize) {
                     val `val` = intValues[pixel++]
                     byteBuffer.putFloat(((`val` shr 16) and 0xFF) * (1f / 255f))
                     byteBuffer.putFloat(((`val` shr 8) and 0xFF) * (1f / 255f))
@@ -98,34 +102,37 @@ class ScanActivity : AppCompatActivity() {
 
             inputFeature0.loadBuffer(byteBuffer)
 
-            // Runs model inference and gets result.
+// Run inference
             val outputs = model.process(inputFeature0)
-            val outputFeature0 = outputs.getOutputFeature0AsTensorBuffer()
+            val outputFeature0 = outputs.outputFeature0AsTensorBuffer
 
-            val confidences = outputFeature0.floatArray
+// Retrieve class labels
+            val classes = arrayOf("helthyapple", "blackrotapple","helthycorn","common rust","helthygrape","blackrot grape")
+
+// Find the class with the highest confidence
             var maxPos = 0
             var maxConfidence = 0f
-            for (i in confidences.indices) {
-                if (confidences[i] > maxConfidence) {
-                    maxConfidence = confidences[i]
+            for (i in classes.indices) {
+                val confidence = outputFeature0.getFloatValue(i)
+                if (confidence > maxConfidence) {
+                    maxConfidence = confidence
                     maxPos = i
                 }
             }
 
-            //val classes = arrayOf("1", "2","3","4","5","6","7","8","9","10")
-            val classes = arrayOf("1", "2","3")
-
+// Display result
             binding.result.text = classes[maxPos]
 
+// Display confidence values for each class
             var s = ""
             for (i in classes.indices) {
-                s += String.format("%s: %.1f%%\n", classes[i], confidences[i] * 100)
+                s += String.format("%s: %.1f%%\n", classes[i], outputFeature0.getFloatValue(i) * 100)
             }
-
             binding.confidence.text = s
 
-            // Releases model resources if no longer used.
+// Close the model to release resources
             model.close()
+
         } catch (e: IOException) {
             // TODO Handle the exception
             Toast.makeText(this,"${e.toString()}",Toast.LENGTH_SHORT).show()
@@ -140,14 +147,14 @@ class ScanActivity : AppCompatActivity() {
         if (resultCode== RESULT_OK){
             if (requestCode==3) {
                 var image = data?.extras?.get("data") as Bitmap
-                val dimension = minOf(image!!.width, image!!.height)
+                val dimension = minOf(image.width, image.height)
                 val thumbnail = ThumbnailUtils.extractThumbnail(image, dimension, dimension)
-                binding.imageView.setImageBitmap(thumbnail)
-                val scaledImage = Bitmap.createScaledBitmap(thumbnail, 32, 32, false)
+                binding.imageView.setImageBitmap(image)
+                val scaledImage = Bitmap.createScaledBitmap(thumbnail, 224, 224, false)
                 classifyImage(scaledImage)
-
+/*
                 //Firebse FireStore
-               /* val db=Firebase.firestore
+                val db=Firebase.firestore
                 val collection=db.collection("Users")
                 val storage=Firebase.storage
                 val storageRef = storage.reference
@@ -177,12 +184,17 @@ class ScanActivity : AppCompatActivity() {
 
                 }
                 binding.imageView.setImageBitmap(image)
-                val dimension = minOf(image!!.width, image!!.height)
-                val thumbnail = ThumbnailUtils.extractThumbnail(image, dimension, dimension)
-                val scaledImage = Bitmap.createScaledBitmap(thumbnail, 32, 32, false)
-                classifyImage(scaledImage)
 
-               /* //Firebase Firebase
+                val dimension = image?.let { minOf(it.width, image.height) }
+                val thumbnail =
+                    dimension?.let { ThumbnailUtils.extractThumbnail(image, it, dimension) }
+                binding.imageView.setImageBitmap(image)
+                val scaledImage = thumbnail?.let { Bitmap.createScaledBitmap(it, 224, 224, false) }
+                if (scaledImage != null) {
+                    classifyImage(scaledImage)
+                }
+
+                /*//Firebase Firebase
                 val db=Firebase.firestore
                 val collection=db.collection("Users")
                 var uuid=UUID.randomUUID()
