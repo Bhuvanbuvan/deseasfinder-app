@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "889428053871",
+    "project_id": "disease-sence",
+    "storage_bucket": "disease-sence.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889428053871:android:73ee205d4e49d8bac3629a",
+        "android_client_info": {
+          "package_name": "com.example.diseasesence"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2UdojZzIUD4NALzWMsMOjWDVY3O5eMrk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
