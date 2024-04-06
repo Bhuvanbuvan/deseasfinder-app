@@ -51,12 +51,6 @@ class ScanActivity : AppCompatActivity() {
             startActivityForResult(i,100)
         }
 
-        binding.launchgal.setOnClickListener {
-            var i=Intent(Intent.ACTION_PICK)
-            i.type="image/*"
-            startActivityForResult(i,100)
-        }
-
         binding.takePick.setOnClickListener {
 
             if (checkSelfPermission(Manifest.permission.CAMERA)==PackageManager.PERMISSION_GRANTED){
@@ -76,7 +70,7 @@ class ScanActivity : AppCompatActivity() {
     private fun classifyImage(image: Bitmap) {
         try {
 // Load your TensorFlow Lite model
-            val model = ModelUnquant.newInstance(applicationContext)
+            val model = ModelUnquant.newInstance(application)
 
 // Prepare input image
             /*val inputFeature0 = TensorImage(DataType.FLOAT32)
@@ -107,8 +101,8 @@ class ScanActivity : AppCompatActivity() {
             val outputFeature0 = outputs.outputFeature0AsTensorBuffer
 
 // Retrieve class labels
-            val classes = arrayOf("helthyapple", "blackrotapple","helthycorn","common rust","helthygrape","blackrot grape")
 
+            val classes = arrayOf("Healthy Apple ", "Apple Black Rot","Healthy Corn ","Corn leaf rust","Healthy Grape ","Grapevine Black Rot")
 // Find the class with the highest confidence
             var maxPos = 0
             var maxConfidence = 0f
@@ -121,14 +115,22 @@ class ScanActivity : AppCompatActivity() {
             }
 
 // Display result
-            binding.result.text = classes[maxPos]
+            binding.itemname.text = classes[maxPos]
 
 // Display confidence values for each class
-            var s = ""
+            val description= arrayOf(
+                "Maintaining healthy apple leaves is crucial for the overall health and productivity of apple trees. Here are some key factors to consider in promoting healthy apple leaves",
+                "Black rot is a common fungal disease affecting apple trees, caused by the fungus Botryosphaeria obtusa. It primarily affects the leaves, fruit, and branches of apple trees, leading to significant yield losses if left unmanaged.",
+                "Maintaining healthy corn leaves is essential for maximizing yield and overall plant health. Here are some key practices to promote healthy corn leaves.",
+                "Corn leaf rust, caused by the fungus Puccinia sorghi, is a common foliar disease that affects corn plants. Here's some information about corn leaf common rust disease.",
+                "Maintaining healthy grape leaves is crucial for ensuring vigorous vine growth, optimal photosynthesis, and high-quality grape production.",
+                "Grapevine black rot, caused by the fungus Guignardia bidwellii, is a common and destructive disease affecting grapevines."
+            )
+            /*var s = ""
             for (i in classes.indices) {
                 s += String.format("%s: %.1f%%\n", classes[i], outputFeature0.getFloatValue(i) * 100)
-            }
-            binding.confidence.text = s
+            }*/
+            binding.desc.text=description[maxPos]
 
 // Close the model to release resources
             model.close()
