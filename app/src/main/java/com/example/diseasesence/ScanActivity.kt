@@ -41,6 +41,11 @@ class ScanActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?){
     super.onCreate(savedInstanceState)
 
+        binding.historybtn.setOnClickListener {
+
+        }
+
+
     binding=DataBindingUtil.setContentView(this,R.layout.activity_scan)
     Toast.makeText(this,"${Users.instence?.userId}",Toast.LENGTH_SHORT).show()
         auth=Firebase.auth
@@ -50,6 +55,7 @@ class ScanActivity : AppCompatActivity() {
             i.type="image/*"
             startActivityForResult(i,100)
         }
+
 
         binding.takePick.setOnClickListener {
 
