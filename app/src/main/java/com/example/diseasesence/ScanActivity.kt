@@ -38,15 +38,31 @@ class ScanActivity : AppCompatActivity() {
     var TAG = "TAGY"
     var imageuri:Uri?= null
     var imageSize=224
+    lateinit var uuid:UUID
+    var img_Url=""
+    var name=""
     override fun onCreate(savedInstanceState: Bundle?){
     super.onCreate(savedInstanceState)
 
-        binding.historybtn.setOnClickListener {
 
-        }
 
 
     binding=DataBindingUtil.setContentView(this,R.layout.activity_scan)
+
+
+
+        binding.historybtn.setOnClickListener {
+            var intent=Intent(this,HistoryView::class.java)
+            startActivity(intent)
+        }
+
+        binding.signout.setOnClickListener {
+            auth=Firebase.auth
+
+            auth.signOut()
+            var inted=Intent(this,MainActivity::class.java)
+            startActivity(inted)
+        }
     Toast.makeText(this,"${Users.instence?.userId}",Toast.LENGTH_SHORT).show()
         auth=Firebase.auth
 
@@ -138,8 +154,14 @@ class ScanActivity : AppCompatActivity() {
             }*/
             binding.desc.text=description[maxPos]
 
+            name=classes[maxPos]
+
+
 // Close the model to release resources
             model.close()
+
+
+
 
         } catch (e: IOException) {
             // TODO Handle the exception
@@ -160,13 +182,13 @@ class ScanActivity : AppCompatActivity() {
                 binding.imageView.setImageBitmap(image)
                 val scaledImage = Bitmap.createScaledBitmap(thumbnail, 224, 224, false)
                 classifyImage(scaledImage)
-/*
+
+
                 //Firebse FireStore
-                val db=Firebase.firestore
-                val collection=db.collection("Users")
+
                 val storage=Firebase.storage
                 val storageRef = storage.reference
-                var uuid=UUID.randomUUID()
+                 uuid=UUID.randomUUID()
                 val imagesRef = storageRef.child("${Users.instence?.userId}/${uuid}.jpg")
                 val baos = ByteArrayOutputStream()
                 image.compress(Bitmap.CompressFormat.JPEG, 100, baos)
@@ -175,13 +197,17 @@ class ScanActivity : AppCompatActivity() {
                         task ->
                     task.metadata?.reference?.downloadUrl?.addOnSuccessListener { url ->
                         Toast.makeText(this, url.toString(), Toast.LENGTH_SHORT).show()
+                        img_Url=url.toString()
+                        //firestore update
+                        val db=Firebase.firestore
+                        val collection=db.collection("Users")
                         val time=Timestamp(Date())
-                        val user=ItemModel(Users.instence?.userId.toString(),uuid.toString(),time,url.toString())
+                        val user=ItemModel(Users.instence?.userId.toString(),name,uuid.toString(),time,img_Url.toString())
                         collection.document("$uuid").set(user)
                     }
                 }.addOnCanceledListener {
                     Toast.makeText(this, "on cancelled", Toast.LENGTH_SHORT).show()
-                }*/
+                }
 
             }else{
                 imageuri=data?.data
@@ -202,28 +228,31 @@ class ScanActivity : AppCompatActivity() {
                     classifyImage(scaledImage)
                 }
 
-                /*//Firebase Firebase
-                val db=Firebase.firestore
-                val collection=db.collection("Users")
-                var uuid=UUID.randomUUID()
-                var storage=Firebase.storage
-                var storageRef=storage.reference
-                imageuri.let {
-                    if (it != null) {
-                        Toast.makeText(this, "upload start", Toast.LENGTH_SHORT).show()
-                        storageRef.child("${Users.instence?.userId}/${uuid}.jpg").putFile(it).addOnSuccessListener { task ->
-                            task.metadata?.reference?.downloadUrl?.addOnSuccessListener { url ->
-                                Toast.makeText(this, url.toString(), Toast.LENGTH_SHORT).show()
-                                val time=Timestamp(Date())
-                                val user=ItemModel(Users.instence?.userId.toString(),uuid.toString(),time,url.toString())
-                                collection.document("$uuid").set(user)
-                            }
-                        }.addOnCanceledListener {
-                            Toast.makeText(this, "on cancelled", Toast.LENGTH_SHORT).show()
-                        }
-
+                //Firebase Firebase
+                val storage=Firebase.storage
+                val storageRef = storage.reference
+                uuid=UUID.randomUUID()
+                val imagesRef = storageRef.child("${Users.instence?.userId}/${uuid}.jpg")
+                val baos = ByteArrayOutputStream()
+                if (image != null) {
+                    image.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                }
+                val data = baos.toByteArray()
+                imagesRef.putBytes(data).addOnSuccessListener {
+                        task ->
+                    task.metadata?.reference?.downloadUrl?.addOnSuccessListener { url ->
+                        Toast.makeText(this, url.toString(), Toast.LENGTH_SHORT).show()
+                        img_Url=url.toString()
+                        //firestore update
+                        val db=Firebase.firestore
+                        val collection=db.collection("Users")
+                        val time=Timestamp(Date())
+                        val user=ItemModel(Users.instence?.userId.toString(),name,uuid.toString(),time,img_Url.toString())
+                        collection.document("$uuid").set(user)
                     }
-                }*/
+                }.addOnCanceledListener {
+                    Toast.makeText(this, "on cancelled", Toast.LENGTH_SHORT).show()
+                }
 
             }
 

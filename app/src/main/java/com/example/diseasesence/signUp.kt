@@ -49,6 +49,9 @@ class signUp : AppCompatActivity() {
                     Log.d(TAG, "createUserWithEmail:success")
                     val user = auth.currentUser
                     //updateUI(null)
+                    Users.instence?.userId = user?.uid
+                    var i=Intent(this,ScanActivity::class.java)
+                    startActivity(i)
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "createUserWithEmail:failure", task.exception)

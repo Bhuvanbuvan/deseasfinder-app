@@ -57,4 +57,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    //picasoo
+    implementation("com.squareup.picasso:picasso:2.8")
 }
