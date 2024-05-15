@@ -1,6 +1,7 @@
 package com.example.diseasesence
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -41,6 +42,7 @@ class ScanActivity : AppCompatActivity() {
     lateinit var uuid:UUID
     var img_Url=""
     var name=""
+    @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?){
     super.onCreate(savedInstanceState)
 
@@ -148,11 +150,22 @@ class ScanActivity : AppCompatActivity() {
                 "Maintaining healthy grape leaves is crucial for ensuring vigorous vine growth, optimal photosynthesis, and high-quality grape production.",
                 "Grapevine black rot, caused by the fungus Guignardia bidwellii, is a common and destructive disease affecting grapevines."
             )
+
+            val med= arrayOf(
+                "10-20 gallons of water ever day.",
+                "medicine: Captan formula",
+                "3.6-5.4 liters of water/day",
+                "medicine: Tebuconazole",
+                "2.68-5.36 liters of watter/day",
+                "medicine: Myclobutanil"
+            )
+
             /*var s = ""
             for (i in classes.indices) {
                 s += String.format("%s: %.1f%%\n", classes[i], outputFeature0.getFloatValue(i) * 100)
             }*/
             binding.desc.text=description[maxPos]
+            binding.textView2.text=med[maxPos]
 
             name=classes[maxPos]
 

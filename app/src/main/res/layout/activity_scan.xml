@@ -96,29 +96,29 @@
             android:layout_margin="10dp"
             android:background="@drawable/textviewscan"
             android:maxLines="6"
-            android:paddingTop="25dp"
             android:padding="10dp"
+            android:paddingStart="20dp"
+            android:paddingTop="25dp"
             android:text="Description: ..."
             android:textColor="#D7000000"
             android:textSize="24sp"
-            android:paddingStart="20dp"
             android:textStyle="normal"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/textView2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/itemname"
             app:layout_constraintVertical_bias="0.0" />
 
-        <Button
-            android:id="@+id/viewmore"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="40dp"
-            android:text="View More"
-            android:textSize="23sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Medicine"
+            android:textAlignment="center"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#06570A"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

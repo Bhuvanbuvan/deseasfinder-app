@@ -9,7 +9,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.diseasesence.databinding.ActivityHistoryViewBinding
+import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
 import java.util.Date
 
 class HistoryView : AppCompatActivity() {
@@ -23,19 +26,33 @@ class HistoryView : AppCompatActivity() {
             var i=Intent(this,ScanActivity::class.java)
             startActivity(i)
         }
-        var time=Timestamp(Date())
-        var items= arrayListOf(
-            ItemModel(Users.instence?.userId.toString(),"grapes","imagename", time,"https://firebasestorage.googleapis.com/v0/b/disease-sence.appspot.com/o/CDRsOj7HdsaXFv0H8VQ1R7a6yMs1%2F08f7b3c7-6a9b-4339-ad0d-a2ae9b57cb2f.jpg?alt=media&token=37762a43-3b61-4843-b5b6-d049193edc68"),
-            ItemModel(Users.instence?.userId.toString(),"grapes","imagename", time,"https://firebasestorage.googleapis.com/v0/b/disease-sence.appspot.com/o/CDRsOj7HdsaXFv0H8VQ1R7a6yMs1%2F08f7b3c7-6a9b-4339-ad0d-a2ae9b57cb2f.jpg?alt=media&token=37762a43-3b61-4843-b5b6-d049193edc68"),
-            ItemModel(Users.instence?.userId.toString(),"grapes","imagename", time,"https://firebasestorage.googleapis.com/v0/b/disease-sence.appspot.com/o/CDRsOj7HdsaXFv0H8VQ1R7a6yMs1%2F08f7b3c7-6a9b-4339-ad0d-a2ae9b57cb2f.jpg?alt=media&token=37762a43-3b61-4843-b5b6-d049193edc68"),
-            ItemModel(Users.instence?.userId.toString(),"grapes","imagename", time,"https://firebasestorage.googleapis.com/v0/b/disease-sence.appspot.com/o/CDRsOj7HdsaXFv0H8VQ1R7a6yMs1%2F08f7b3c7-6a9b-4339-ad0d-a2ae9b57cb2f.jpg?alt=media&token=37762a43-3b61-4843-b5b6-d049193edc68")
-        )
+        var db=Firebase.firestore
+        val collection=db.collection("Users")
 
-        hisadapter=RecylerAdapter(items)
-        binding.historyitems.apply {
-            this.layoutManager=LinearLayoutManager(context)
-            setHasFixedSize(true)
-            adapter=hisadapter
+        collection.whereEqualTo("userId", Users.instence?.userId.toString())
+            .get().addOnSuccessListener {querysnapshot->
+                if (querysnapshot!=null){
+                    var Foods= mutableListOf<ItemModel>()
+                    for (snapshot in querysnapshot){
+                        Foods.add(
+                            ItemModel(snapshot.data.get("userId").toString(),
+                            snapshot.data.get("name").toString(),
+                                snapshot.data.get("image_name").toString(),
+                            snapshot.data.get("time") as Timestamp,
+                            snapshot.data.get("image_Url").toString()
+                        )
+                        )
+                        hisadapter=RecylerAdapter(Foods)
+                        binding.historyitems.apply {
+                            this.layoutManager=LinearLayoutManager(context)
+                            setHasFixedSize(true)
+                            adapter=hisadapter
+                    }
+                }
+
+            }
+
+
         }
     }
 }
